@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Resumes - ResumeAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-brand">ResumeAI</a>
+        <div class="nav-links">
+            <span class="nav-user">Hi, {{ user_name }}</span>
+            <a href="/dashboard" class="btn btn-small">Back</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>My Resume Versions</h2>
+        <p class="subtitle">Every resume you generate is saved here. Nothing is overwritten.</p>
+
+        {% if resumes %}
+        <div class="versions-list">
+            {% for resume in resumes %}
+            <div class="version-card">
+                <div class="version-info">
+                    <span class="version-badge">v{{ resume.version }}</span>
+                    <span class="version-template">{{ resume.template }}</span>
+                    <span class="version-date">{{ resume.created_at }}</span>
+                    {% if resume.ats_score %}
+                    <span class="version-score">ATS: {{ resume.ats_score }}/100</span>
+                    {% endif %}
+                </div>
+                <div class="version-actions">
+                    <a href="/preview/{{ resume.id }}" target="_blank" class="btn btn-small">Preview</a>
+                    <a href="/export/{{ resume.id }}" class="btn btn-small btn-secondary">PDF</a>
+                    <a href="/portfolio/{{ resume.id }}" target="_blank" class="btn btn-small btn-secondary">Portfolio</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No resumes yet. <a href="/builder">Build your first one!</a></p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

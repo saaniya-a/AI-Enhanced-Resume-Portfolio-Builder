@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimize Resume - ResumeAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-brand">ResumeAI</a>
+        <div class="nav-links">
+            <span class="nav-user">Hi, {{ user_name }}</span>
+            <a href="/dashboard" class="btn btn-small">Back</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Optimize Your Resume</h2>
+        <p class="subtitle">Paste your resume and a job description. AI will optimize it.</p>
+
+        <form id="optimizer-form" class="resume-form">
+            <div class="form-section">
+                <h3>Your Current Resume</h3>
+                <div class="input-group">
+                    <label for="resume_text">Paste your full resume text</label>
+                    <textarea id="resume_text" name="resume_text" rows="12" required placeholder="Paste your entire resume here..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Target Job Description</h3>
+                <div class="input-group">
+                    <label for="job_description">Paste the job posting</label>
+                    <textarea id="job_description" name="job_description" rows="10" required placeholder="Paste the job description you're applying for..."></textarea>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary btn-large" id="optimize-btn">
+                    Optimize with AI
+                </button>
+                <button type="button" class="btn btn-secondary btn-large" id="ats-check-btn">
+                    Run ATS Check Only
+                </button>
+            </div>
+        </form>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>AI is analyzing your resume...</p>
+        </div>
+
+        <!-- Optimization Results -->
+        <div id="optimize-result" class="result-section hidden">
+            <h3>Optimization Results</h3>
+
+            <div id="score-display" class="score-card">
+                <div class="score-number">--</div>
+                <div class="score-label">ATS Score</div>
+            </div>
+
+            <div id="changes-list" class="changes-section"></div>
+            <div id="suggestions-list" class="suggestions-section"></div>
+
+            <div class="result-actions">
+                <a id="preview-link" href="#" target="_blank" class="btn btn-primary">Full Preview</a>
+                <a id="pdf-link" href="#" class="btn btn-secondary">Download PDF</a>
+            </div>
+        </div>
+
+        <!-- ATS Check Results -->
+        <div id="ats-result" class="result-section hidden">
+            <h3>ATS Analysis</h3>
+
+            <div id="ats-score-display" class="score-card">
+                <div class="score-number">--</div>
+                <div class="score-label">ATS Score</div>
+            </div>
+
+            <div class="ats-details">
+                <div id="keywords-found" class="keyword-section"></div>
+                <div id="keywords-missing" class="keyword-section"></div>
+                <div id="format-issues" class="issues-section"></div>
+                <div id="content-feedback" class="feedback-section"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

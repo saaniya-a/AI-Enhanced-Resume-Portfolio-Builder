@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ resume.name }} - Resume</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; color: #111; max-width: 750px; margin: 0 auto; padding: 40px; line-height: 1.6; font-size: 14px; }
+        .header { margin-bottom: 25px; }
+        .header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+        .header .contact { font-size: 13px; color: #444; margin-top: 4px; }
+        .divider { border: none; border-top: 1px solid #ddd; margin: 15px 0; }
+        .section { margin-bottom: 18px; }
+        .section h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 3px; color: #888; margin-bottom: 8px; }
+        .summary { color: #444; }
+        .entry { margin-bottom: 12px; }
+        .entry-header { font-weight: 700; }
+        .entry-sub { color: #666; font-size: 13px; }
+        ul { margin-left: 20px; margin-top: 4px; }
+        li { margin-bottom: 2px; }
+        .skills-list { color: #444; }
+        @media print { body { padding: 20px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ resume.name }}</h1>
+        <div class="contact">
+            {{ resume.email }}{% if resume.phone %} / {{ resume.phone }}{% endif %}{% if resume.location %} / {{ resume.location }}{% endif %}
+        </div>
+    </div>
+    <hr class="divider">
+
+    {% if resume.summary %}
+    <div class="section">
+        <h2>Summary</h2>
+        <p class="summary">{{ resume.summary }}</p>
+    </div>
+    <hr class="divider">
+    {% endif %}
+
+    {% if resume.experience %}
+    <div class="section">
+        <h2>Experience</h2>
+        {% for exp in resume.experience %}
+        <div class="entry">
+            <div class="entry-header">{{ exp.title }} — {{ exp.company }}</div>
+            <div class="entry-sub">{{ exp.duration }}</div>
+            <ul>
+                {% for bullet in exp.bullets %}
+                <li>{{ bullet }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+    <hr class="divider">
+    {% endif %}
+
+    {% if resume.education %}
+    <div class="section">
+        <h2>Education</h2>
+        {% for edu in resume.education %}
+        <div class="entry">
+            <div class="entry-header">{{ edu.degree }}</div>
+            <div class="entry-sub">{{ edu.school }} — {{ edu.year }}</div>
+            {% if edu.details %}<p>{{ edu.details }}</p>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <hr class="divider">
+    {% endif %}
+
+    {% if resume.projects %}
+    <div class="section">
+        <h2>Projects</h2>
+        {% for project in resume.projects %}
+        <div class="entry">
+            <div class="entry-header">{{ project.name }}</div>
+            {% if project.tech %}<div class="entry-sub">{{ project.tech }}</div>{% endif %}
+            <p>{{ project.description }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    <hr class="divider">
+    {% endif %}
+
+    {% if resume.skills %}
+    <div class="section">
+        <h2>Skills</h2>
+        <p class="skills-list">{{ resume.skills | join(' / ') }}</p>
+    </div>
+    {% endif %}
+
+    {% if resume.certifications %}
+    <hr class="divider">
+    <div class="section">
+        <h2>Certifications</h2>
+        <ul>
+            {% for cert in resume.certifications %}
+            <li>{{ cert }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</body>
+</html>

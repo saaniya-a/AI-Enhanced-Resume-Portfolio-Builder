@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ resume.name }} - Portfolio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; color: #333; }
+        .hero { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 60px 20px; text-align: center; }
+        .hero h1 { font-size: 36px; margin-bottom: 10px; }
+        .hero p { font-size: 16px; opacity: 0.9; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .section { background: white; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section h2 { font-size: 18px; color: #667eea; margin-bottom: 15px; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; }
+        .entry { margin-bottom: 15px; }
+        .entry h3 { font-size: 16px; margin-bottom: 4px; }
+        .entry .meta { color: #888; font-size: 14px; }
+        ul { margin-left: 20px; margin-top: 8px; }
+        li { margin-bottom: 4px; font-size: 15px; }
+        .skills-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .skill { background: #667eea; color: white; padding: 5px 14px; border-radius: 20px; font-size: 13px; }
+        .footer { text-align: center; padding: 30px; color: #999; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>{{ resume.name }}</h1>
+        <p>{{ resume.email }}{% if resume.location %} | {{ resume.location }}{% endif %}</p>
+    </div>
+
+    <div class="container">
+        {% if resume.summary %}
+        <div class="section">
+            <h2>About Me</h2>
+            <p>{{ resume.summary }}</p>
+        </div>
+        {% endif %}
+
+        {% if resume.experience %}
+        <div class="section">
+            <h2>Experience</h2>
+            {% for exp in resume.experience %}
+            <div class="entry">
+                <h3>{{ exp.title }}</h3>
+                <p class="meta">{{ exp.company }} | {{ exp.duration }}</p>
+                <ul>
+                    {% for bullet in exp.bullets %}
+                    <li>{{ bullet }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if resume.projects %}
+        <div class="section">
+            <h2>Projects</h2>
+            {% for project in resume.projects %}
+            <div class="entry">
+                <h3>{{ project.name }}</h3>
+                {% if project.tech %}<p class="meta">{{ project.tech }}</p>{% endif %}
+                <p>{{ project.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if resume.skills %}
+        <div class="section">
+            <h2>Skills</h2>
+            <div class="skills-grid">
+                {% for skill in resume.skills %}
+                <span class="skill">{{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if resume.education %}
+        <div class="section">
+            <h2>Education</h2>
+            {% for edu in resume.education %}
+            <div class="entry">
+                <h3>{{ edu.degree }}</h3>
+                <p class="meta">{{ edu.school }} | {{ edu.year }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">Built with ResumeAI</div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResumeAI - Smart Resume Builder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="landing-container">
+        <div class="landing-card">
+            <h1>ResumeAI</h1>
+            <p class="tagline">AI-Powered Resume Builder & ATS Optimizer</p>
+
+            <form method="POST" action="/">
+                <div class="input-group">
+                    <label for="name">Enter your name to get started</label>
+                    <input type="text" id="name" name="name" placeholder="e.g. Saaniya" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Get Started</button>
+            </form>
+
+            <div class="features-preview">
+                <div class="feature">
+                    <span class="feature-icon">1</span>
+                    <span>Build Resume</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">2</span>
+                    <span>ATS Optimize</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">3</span>
+                    <span>Export & Share</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

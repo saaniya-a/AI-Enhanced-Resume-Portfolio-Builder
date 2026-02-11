@@ -1,3 +1,3 @@
 # AI-Enhanced Resume Portfolio Builder
 
-Hackathon project.
+hellothon project.

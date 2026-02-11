@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cover Letter - ResumeAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-brand">ResumeAI</a>
+        <div class="nav-links">
+            <span class="nav-user">Hi, {{ user_name }}</span>
+            <a href="/dashboard" class="btn btn-small">Back</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Generate Cover Letter</h2>
+        <p class="subtitle">AI creates a role-specific cover letter from your resume.</p>
+
+        <form id="cover-letter-form" class="resume-form">
+            <div class="form-section">
+                <h3>Your Resume</h3>
+                <div class="input-group">
+                    <label for="resume_text">Paste your resume text</label>
+                    <textarea id="cl_resume_text" name="resume_text" rows="10" required placeholder="Paste your resume here..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Job Description</h3>
+                <div class="input-group">
+                    <label for="job_description">Paste the job posting</label>
+                    <textarea id="cl_job_description" name="job_description" rows="8" required placeholder="Paste the job description..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large" id="cl-generate-btn">
+                Generate Cover Letter
+            </button>
+        </form>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>AI is writing your cover letter...</p>
+        </div>
+
+        <div id="cover-letter-result" class="result-section hidden">
+            <h3>Your Cover Letter</h3>
+            <div id="cover-letter-text" class="cover-letter-preview"></div>
+            <button class="btn btn-secondary" onclick="copyToClipboard()">Copy to Clipboard</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

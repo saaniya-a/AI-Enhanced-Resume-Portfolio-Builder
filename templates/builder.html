@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Resume - ResumeAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-brand">ResumeAI</a>
+        <div class="nav-links">
+            <span class="nav-user">Hi, {{ user_name }}</span>
+            <a href="/dashboard" class="btn btn-small">Back</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Build Your Resume</h2>
+        <p class="subtitle">Fill in your details. AI will structure and polish everything.</p>
+
+        <form id="resume-form" class="resume-form">
+            <div class="form-section">
+                <h3>Personal Information</h3>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="phone">Phone</label>
+                        <input type="tel" id="phone" name="phone">
+                    </div>
+                    <div class="input-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" name="location" placeholder="City, State">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Education</h3>
+                <div class="input-group">
+                    <label for="education">Write freely - AI will format it</label>
+                    <textarea id="education" name="education" rows="4" placeholder="e.g. B.Tech Computer Science from XYZ University, 2024, CGPA 8.5"></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Experience</h3>
+                <div class="input-group">
+                    <label for="experience">Describe your work experience</label>
+                    <textarea id="experience" name="experience" rows="6" placeholder="e.g. Worked as intern at ABC company for 3 months. Built a dashboard using React. Helped the team fix bugs."></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Projects</h3>
+                <div class="input-group">
+                    <label for="projects">Describe your projects</label>
+                    <textarea id="projects" name="projects" rows="6" placeholder="e.g. Built a todo app using Python and Flask. It has user login and database. Used by 50 students in my class."></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Skills</h3>
+                <div class="input-group">
+                    <label for="skills">List your skills (comma separated)</label>
+                    <textarea id="skills" name="skills" rows="3" placeholder="e.g. Python, JavaScript, React, SQL, Git, Problem Solving"></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Certifications (Optional)</h3>
+                <div class="input-group">
+                    <label for="certifications">Any certifications or courses</label>
+                    <textarea id="certifications" name="certifications" rows="3" placeholder="e.g. AWS Cloud Practitioner, Google Data Analytics Certificate"></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Template</h3>
+                <div class="template-selector">
+                    <label class="template-option">
+                        <input type="radio" name="template" value="classic" checked>
+                        <span class="template-label">Classic</span>
+                    </label>
+                    <label class="template-option">
+                        <input type="radio" name="template" value="modern">
+                        <span class="template-label">Modern</span>
+                    </label>
+                    <label class="template-option">
+                        <input type="radio" name="template" value="minimal">
+                        <span class="template-label">Minimal</span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large" id="generate-btn">
+                Generate Resume with AI
+            </button>
+        </form>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>AI is building your resume...</p>
+        </div>
+
+        <div id="result" class="result-section hidden">
+            <h3>Your Resume is Ready!</h3>
+            <div id="resume-preview" class="resume-preview"></div>
+            <div class="result-actions">
+                <a id="preview-link" href="#" target="_blank" class="btn btn-primary">Full Preview</a>
+                <a id="pdf-link" href="#" class="btn btn-secondary">Download PDF</a>
+                <a id="portfolio-link" href="#" target="_blank" class="btn btn-secondary">Portfolio Link</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
