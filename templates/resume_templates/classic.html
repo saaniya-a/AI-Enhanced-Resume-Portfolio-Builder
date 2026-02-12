@@ -5,24 +5,73 @@
     <title>{{ resume.name }} - Resume</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Georgia', serif; color: #333; max-width: 800px; margin: 0 auto; padding: 40px; line-height: 1.5; }
-        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
-        .header h1 { font-size: 28px; margin-bottom: 5px; }
-        .header .contact { font-size: 14px; color: #555; }
-        .section { margin-bottom: 20px; }
-        .section h2 { font-size: 16px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #999; padding-bottom: 5px; margin-bottom: 10px; }
-        .summary { font-style: italic; color: #555; margin-bottom: 15px; }
-        .entry { margin-bottom: 12px; }
-        .entry-header { display: flex; justify-content: space-between; font-weight: bold; }
-        .entry-sub { color: #555; font-size: 14px; }
-        ul { margin-left: 20px; margin-top: 5px; }
-        li { margin-bottom: 3px; font-size: 14px; }
-        .skills-list { display: flex; flex-wrap: wrap; gap: 8px; }
-        .skill-tag { background: #f0f0f0; padding: 3px 10px; border-radius: 3px; font-size: 13px; }
-        @media print { body { padding: 20px; } }
+        body {
+            font-family: Georgia, serif;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            line-height: 1.5;
+        }
+        .header {
+            text-align: left;
+            border-bottom: 2px solid #333;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 26px;
+            margin-bottom: 4px;
+        }
+        .contact {
+            font-size: 14px;
+            color: #555;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #999;
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+        }
+        .summary {
+            font-size: 14px;
+            color: #555;
+        }
+        .entry {
+            margin-bottom: 12px;
+        }
+        .entry-title {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .entry-meta {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 4px;
+        }
+        ul {
+            margin-left: 20px;
+            margin-top: 4px;
+        }
+        li {
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        .skills-text {
+            font-size: 14px;
+        }
+        @media print {
+            body { padding: 20px; }
+        }
     </style>
 </head>
 <body>
+
     <div class="header">
         <h1>{{ resume.name }}</h1>
         <div class="contact">
@@ -34,7 +83,7 @@
 
     {% if resume.summary %}
     <div class="section">
-        <h2>Professional Summary</h2>
+        <h2>Summary</h2>
         <p class="summary">{{ resume.summary }}</p>
     </div>
     {% endif %}
@@ -44,11 +93,12 @@
         <h2>Experience</h2>
         {% for exp in resume.experience %}
         <div class="entry">
-            <div class="entry-header">
-                <span>{{ exp.title }}</span>
-                <span>{{ exp.duration }}</span>
+            <div class="entry-title">
+                {{ exp.title }} — {{ exp.company }}
             </div>
-            <div class="entry-sub">{{ exp.company }}</div>
+            <div class="entry-meta">
+                {{ exp.duration }}
+            </div>
             <ul>
                 {% for bullet in exp.bullets %}
                 <li>{{ bullet }}</li>
@@ -64,12 +114,15 @@
         <h2>Education</h2>
         {% for edu in resume.education %}
         <div class="entry">
-            <div class="entry-header">
-                <span>{{ edu.degree }}</span>
-                <span>{{ edu.year }}</span>
+            <div class="entry-title">
+                {{ edu.degree }}
             </div>
-            <div class="entry-sub">{{ edu.school }}</div>
-            {% if edu.details %}<p style="font-size:14px;">{{ edu.details }}</p>{% endif %}
+            <div class="entry-meta">
+                {{ edu.school }}{% if edu.year %}, {{ edu.year }}{% endif %}
+            </div>
+            {% if edu.details %}
+            <p class="summary">{{ edu.details }}</p>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
@@ -80,9 +133,11 @@
         <h2>Projects</h2>
         {% for project in resume.projects %}
         <div class="entry">
-            <strong>{{ project.name }}</strong>
-            {% if project.tech %}<span style="color:#777;font-size:13px;"> | {{ project.tech }}</span>{% endif %}
-            <p style="font-size:14px;">{{ project.description }}</p>
+            <div class="entry-title">{{ project.name }}</div>
+            {% if project.tech %}
+            <div class="entry-meta">{{ project.tech }}</div>
+            {% endif %}
+            <p class="summary">{{ project.description }}</p>
         </div>
         {% endfor %}
     </div>
@@ -91,11 +146,9 @@
     {% if resume.skills %}
     <div class="section">
         <h2>Skills</h2>
-        <div class="skills-list">
-            {% for skill in resume.skills %}
-            <span class="skill-tag">{{ skill }}</span>
-            {% endfor %}
-        </div>
+        <p class="skills-text">
+            {{ resume.skills | join(', ') }}
+        </p>
     </div>
     {% endif %}
 
@@ -109,5 +162,6 @@
         </ul>
     </div>
     {% endif %}
+
 </body>
 </html>

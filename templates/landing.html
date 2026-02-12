@@ -6,35 +6,101 @@
     <title>ResumeAI - Smart Resume Builder</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-    <div class="landing-container">
-        <div class="landing-card">
-            <h1>ResumeAI</h1>
-            <p class="tagline">AI-Powered Resume Builder & ATS Optimizer</p>
+<body class="landing-page">
 
-            <form method="POST" action="/">
-                <div class="input-group">
-                    <label for="name">Enter your name to get started</label>
-                    <input type="text" id="name" name="name" placeholder="e.g. Saaniya" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Get Started</button>
-            </form>
+    <nav class="landing-nav">
+        <span class="nav-brand">ResumeAI</span>
+        <div class="nav-links">
+            {% if user_name %}
+            <span class="nav-user">Hi, {{ user_name }}</span>
+            <a href="/logout" class="btn btn-small">Logout</a>
+            {% else %}
+            <a href="#features">Features</a>
+            <a href="#get-started">Get Started</a>
+            {% endif %}
+        </div>
+    </nav>
 
-            <div class="features-preview">
-                <div class="feature">
-                    <span class="feature-icon">1</span>
-                    <span>Build Resume</span>
-                </div>
-                <div class="feature">
-                    <span class="feature-icon">2</span>
-                    <span>ATS Optimize</span>
-                </div>
-                <div class="feature">
-                    <span class="feature-icon">3</span>
-                    <span>Export & Share</span>
-                </div>
+    <section class="hero">
+        <h1>Build smarter resumes.<br>Land more interviews.</h1>
+        <p class="hero-sub">AI-powered resume builder that helps you create ATS-optimized resumes in minutes.</p>
+
+        {% if not user_name %}
+        <form method="POST" action="/" class="hero-form" id="get-started">
+            <input type="text" name="name" placeholder="Full Name" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <button type="submit" class="btn btn-primary">Get Started</button>
+        </form>
+        {% endif %}
+    </section>
+
+    {% if user_name %}
+    <section class="landing-cards" id="features">
+        <a href="/builder" class="landing-action-card">
+            <div class="card-icon">+</div>
+            <h3>Build from Scratch</h3>
+            <p>Enter your details and let AI generate a polished, professional resume.</p>
+        </a>
+        <a href="/optimizer" class="landing-action-card">
+            <div class="card-icon">^</div>
+            <h3>Optimize Existing Resume</h3>
+            <p>Paste your resume and a job description. Get an ATS score and improvements.</p>
+        </a>
+        <a href="/versions" class="landing-action-card">
+            <div class="card-icon">#</div>
+            <h3>My Resumes</h3>
+            <p>View, rename, or download all your saved resume versions.</p>
+        </a>
+    </section>
+    {% else %}
+    <section class="landing-cards" id="features">
+        <a href="#get-started" class="landing-action-card">
+            <div class="card-icon">+</div>
+            <h3>Build from Scratch</h3>
+            <p>Enter your details and let AI generate a polished, professional resume with the right keywords and formatting.</p>
+        </a>
+        <a href="#get-started" class="landing-action-card">
+            <div class="card-icon">^</div>
+            <h3>Optimize Existing Resume</h3>
+            <p>Paste your resume and a job description. Get an ATS score, keyword analysis, and AI-suggested improvements.</p>
+        </a>
+    </section>
+    {% endif %}
+
+    <section class="features-section">
+        <h2>What ResumeAI Does For You</h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <h4>AI-Powered Writing</h4>
+                <p>Just type your experience in plain English. Our AI restructures it into clean, professional bullet points that hiring managers look for.</p>
+            </div>
+            <div class="feature-item">
+                <h4>ATS Score Check</h4>
+                <p>See how your resume scores against any job description. Find missing keywords and formatting issues before you apply.</p>
+            </div>
+            <div class="feature-item">
+                <h4>Job-Targeted Resumes</h4>
+                <p>Paste a job listing and your resume gets tailored automatically — right keywords, right focus, right tone for that specific role.</p>
+            </div>
+            <div class="feature-item">
+                <h4>Multiple Templates</h4>
+                <p>Choose from Classic, Modern, or Minimal layouts. Each template is designed to pass ATS scanners while looking professional.</p>
+            </div>
+            <div class="feature-item">
+                <h4>Smart Suggestions</h4>
+                <p>Get side-by-side before-and-after comparisons. Accept or reject each change individually — you stay in full control.</p>
+            </div>
+            <div class="feature-item">
+                <h4>Portfolio Page</h4>
+                <p>Every resume gets a shareable portfolio link that showcases your experience, projects, and skills in one clean page.</p>
             </div>
         </div>
-    </div>
+    </section>
+
+    <footer class="landing-footer">
+        <span class="nav-brand">ResumeAI</span>
+        <p>AI-powered resume tools. No data leaves your machine.</p>
+    </footer>
+
 </body>
 </html>

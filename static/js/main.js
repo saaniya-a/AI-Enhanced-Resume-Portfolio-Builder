@@ -1,228 +1,186 @@
-// ─── HELPER: Show/Hide elements ───
+// Helpers
 function show(id) { document.getElementById(id).classList.remove('hidden'); }
 function hide(id) { document.getElementById(id).classList.add('hidden'); }
+function $(id) { return document.getElementById(id); }
 
-// ─── HELPER: API Call ───
 async function apiCall(url, data) {
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-    return response.json();
+    var res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+    return res.json();
 }
 
-// ─── RESUME BUILDER FORM ───
-const resumeForm = document.getElementById('resume-form');
+// Format resume JSON as HTML preview
+function formatResumeHTML(r) {
+    var h = '<div class="preview-header"><h2>' + (r.name||'') + '</h2>';
+    var c = [r.email, r.phone, r.location].filter(Boolean).join(' | ');
+    if (c) h += '<p class="preview-contact">' + c + '</p>';
+    h += '</div>';
+    if (r.summary) h += '<div class="preview-section"><h3>Summary</h3><p>' + r.summary + '</p></div>';
+    if (r.experience && r.experience.length) {
+        h += '<div class="preview-section"><h3>Experience</h3>';
+        r.experience.forEach(function(e) {
+            h += '<div class="preview-entry"><div class="preview-entry-header"><strong>'+e.title+'</strong><span>'+(e.duration||'')+'</span></div>';
+            if (e.company) h += '<div class="preview-entry-sub">'+e.company+'</div>';
+            if (e.bullets) { h += '<ul>'; e.bullets.forEach(function(b){h+='<li>'+b+'</li>';}); h += '</ul>'; }
+            h += '</div>';
+        }); h += '</div>';
+    }
+    if (r.education && r.education.length) {
+        h += '<div class="preview-section"><h3>Education</h3>';
+        r.education.forEach(function(e) {
+            h += '<div class="preview-entry"><div class="preview-entry-header"><strong>'+e.degree+'</strong><span>'+(e.year||'')+'</span></div>';
+            if (e.school) h += '<div class="preview-entry-sub">'+e.school+'</div>';
+            h += '</div>';
+        }); h += '</div>';
+    }
+    if (r.projects && r.projects.length) {
+        h += '<div class="preview-section"><h3>Projects</h3>';
+        r.projects.forEach(function(p) {
+            h += '<div class="preview-entry"><strong>'+p.name+'</strong>';
+            if (p.tech) h += ' <span class="preview-tech">('+p.tech+')</span>';
+            h += '<p>'+(p.description||'')+'</p></div>';
+        }); h += '</div>';
+    }
+    if (r.skills && r.skills.length) {
+        h += '<div class="preview-section"><h3>Skills</h3><div class="preview-skills">';
+        r.skills.forEach(function(s){h+='<span class="skill-pill">'+s+'</span>';}); h += '</div></div>';
+    }
+    if (r.certifications && r.certifications.length) {
+        h += '<div class="preview-section"><h3>Certifications</h3><ul>';
+        r.certifications.forEach(function(c){h+='<li>'+c+'</li>';}); h += '</ul></div>';
+    }
+    return h;
+}
+
+// Animate SVG score gauge
+function setGauge(fillId, numberId, score) {
+    var fill = $(fillId), num = $(numberId);
+    if (!fill || !num) return;
+    var circ = 2 * Math.PI * 50;
+    fill.style.strokeDasharray = circ;
+    fill.style.strokeDashoffset = circ;
+    var color = score >= 70 ? '#27ae60' : score >= 50 ? '#f39c12' : '#e74c3c';
+    fill.style.stroke = color; num.style.fill = color;
+    setTimeout(function(){ fill.style.strokeDashoffset = circ - (score/100)*circ; }, 100);
+    num.textContent = score;
+}
+
+// Resume Builder
+var resumeForm = $('resume-form');
 if (resumeForm) {
-    resumeForm.addEventListener('submit', async (e) => {
+    resumeForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-
-        const data = {
-            name: document.getElementById('name').value,
-            email: document.getElementById('email').value,
-            phone: document.getElementById('phone').value,
-            location: document.getElementById('location').value,
-            education: document.getElementById('education').value,
-            experience: document.getElementById('experience').value,
-            projects: document.getElementById('projects').value,
-            skills: document.getElementById('skills').value,
-            certifications: document.getElementById('certifications').value,
-            template: document.querySelector('input[name="template"]:checked').value
-        };
-
-        hide('result');
-        show('loading');
-
+        var fields = ['name','email','phone','location','education','experience','projects','skills','certifications','job_description'];
+        var data = {}; fields.forEach(function(f){ var el = $(f); if (el) data[f] = el.value; });
+        data.template = document.querySelector('input[name="template"]:checked').value;
+        hide('result'); show('loading');
         try {
-            const result = await apiCall('/api/build-resume', data);
+            var res = await apiCall('/api/build-resume', data);
             hide('loading');
-
-            if (result.resume) {
-                // Show preview
-                const preview = document.getElementById('resume-preview');
-                preview.textContent = JSON.stringify(result.resume, null, 2);
-
-                // Set action links
-                document.getElementById('preview-link').href = '/preview/' + result.resume_id;
-                document.getElementById('pdf-link').href = '/export/' + result.resume_id;
-                document.getElementById('portfolio-link').href = '/portfolio/' + result.resume_id;
-
+            if (res.resume) {
+                $('resume-preview').innerHTML = formatResumeHTML(res.resume);
+                $('preview-link').href = '/preview/' + res.resume_id;
+                $('pdf-link').href = '/export/' + res.resume_id;
+                $('portfolio-link').href = '/portfolio/' + res.resume_id;
                 show('result');
             }
-        } catch (err) {
-            hide('loading');
-            alert('Error: ' + err.message);
-        }
+        } catch(err) { hide('loading'); alert('Error: '+err.message); }
     });
 }
 
-// ─── OPTIMIZER FORM ───
-const optimizerForm = document.getElementById('optimizer-form');
-if (optimizerForm) {
-    optimizerForm.addEventListener('submit', async (e) => {
+// Optimizer
+var optForm = $('optimizer-form');
+if (optForm) {
+    optForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-
-        const data = {
-            resume_text: document.getElementById('resume_text').value,
-            job_description: document.getElementById('job_description').value
-        };
-
-        hide('optimize-result');
-        hide('ats-result');
-        show('loading');
-
+        var data = { resume_text: $('resume_text').value, job_description: $('job_description').value };
+        hide('optimize-result'); hide('ats-result'); show('loading');
         try {
-            const result = await apiCall('/api/optimize-resume', data);
+            var res = await apiCall('/api/optimize-resume', data);
             hide('loading');
-
-            if (result.result) {
-                const r = result.result;
-
-                // Score
-                document.querySelector('#optimize-result .score-number').textContent = r.ats_score || '--';
-
-                // Changes
-                const changesDiv = document.getElementById('changes-list');
-                changesDiv.innerHTML = '<h4>Changes Made:</h4>';
-                if (r.changes) {
-                    r.changes.forEach(change => {
-                        changesDiv.innerHTML += `
-                            <div class="change-item">
-                                <div class="change-original">${change.original}</div>
-                                <div class="change-improved">${change.improved}</div>
-                                <div class="change-reason">${change.reason}</div>
-                            </div>
-                        `;
-                    });
-                }
-
-                // Suggestions
-                const sugDiv = document.getElementById('suggestions-list');
-                sugDiv.innerHTML = '<h4>Suggestions:</h4>';
-                if (r.suggestions) {
-                    r.suggestions.forEach(s => {
-                        sugDiv.innerHTML += `<div class="suggestion-item">${s}</div>`;
-                    });
-                }
-
-                // Links
-                document.getElementById('preview-link').href = '/preview/' + result.resume_id;
-                document.getElementById('pdf-link').href = '/export/' + result.resume_id;
-
-                show('optimize-result');
+            if (res.result) {
+                var r = res.result;
+                setGauge('opt-gauge-fill','opt-gauge-number', r.ats_score||0);
+                var cd = $('changes-list'); cd.innerHTML = '';
+                window._changes = r.changes || [];
+                (r.changes||[]).forEach(function(c,i) {
+                    cd.innerHTML += '<div class="change-card">' +
+                        '<label class="change-checkbox"><input type="checkbox" checked data-index="'+i+'"> Accept</label>' +
+                        '<div class="change-side change-before"><div class="change-label">Before</div><p>'+c.original+'</p></div>' +
+                        '<div class="change-side change-after"><div class="change-label">After</div><p>'+c.improved+'</p></div>' +
+                        '<div class="change-reason">'+c.reason+'</div></div>';
+                });
+                var sd = $('suggestions-list'); sd.innerHTML = '';
+                (r.suggestions||[]).forEach(function(s){ sd.innerHTML += '<div class="suggestion-item">'+s+'</div>'; });
+                hide('final-result'); show('optimize-result');
             }
-        } catch (err) {
-            hide('loading');
-            alert('Error: ' + err.message);
-        }
+        } catch(err) { hide('loading'); alert('Error: '+err.message); }
     });
 }
 
-// ─── ATS CHECK BUTTON ───
-const atsBtn = document.getElementById('ats-check-btn');
+// Apply selected changes
+var applyBtn = $('apply-changes-btn');
+if (applyBtn) {
+    applyBtn.addEventListener('click', async function() {
+        var accepted = [];
+        document.querySelectorAll('#changes-list input[type="checkbox"]').forEach(function(cb) {
+            if (cb.checked) accepted.push(window._changes[parseInt(cb.dataset.index)]);
+        });
+        if (!accepted.length) { alert('Select at least one change.'); return; }
+        show('apply-loading'); hide('final-result');
+        try {
+            var res = await apiCall('/api/apply-changes', { resume_text: $('resume_text').value, changes: accepted });
+            hide('apply-loading');
+            $('final-preview-link').href = '/preview/' + res.resume_id;
+            $('final-pdf-link').href = '/export/' + res.resume_id;
+            show('final-result');
+        } catch(err) { hide('apply-loading'); alert('Error: '+err.message); }
+    });
+}
+
+// ATS Check
+var atsBtn = $('ats-check-btn');
 if (atsBtn) {
-    atsBtn.addEventListener('click', async () => {
-        const data = {
-            resume_text: document.getElementById('resume_text').value,
-            job_description: document.getElementById('job_description').value
-        };
-
-        if (!data.resume_text || !data.job_description) {
-            alert('Please fill in both fields.');
-            return;
-        }
-
-        hide('optimize-result');
-        hide('ats-result');
-        show('loading');
-
+    atsBtn.addEventListener('click', async function() {
+        var data = { resume_text: $('resume_text').value, job_description: $('job_description').value };
+        if (!data.resume_text || !data.job_description) { alert('Fill in both fields.'); return; }
+        hide('optimize-result'); hide('ats-result'); show('loading');
         try {
-            const result = await apiCall('/api/ats-check', data);
+            var r = await apiCall('/api/ats-check', data);
             hide('loading');
-
-            // Score
-            document.querySelector('#ats-result .score-number').textContent = result.score || '--';
-
-            // Keywords found
-            const foundDiv = document.getElementById('keywords-found');
-            foundDiv.innerHTML = '<h4>Keywords Found:</h4><div class="keyword-tags">';
-            if (result.keyword_match && result.keyword_match.found) {
-                result.keyword_match.found.forEach(k => {
-                    foundDiv.innerHTML += `<span class="keyword-tag keyword-found">${k}</span>`;
-                });
+            setGauge('ats-gauge-fill','ats-gauge-number', r.score||0);
+            // Keywords
+            function renderTags(id, title, items, cls) {
+                var d = $(id); d.innerHTML = '<h4>'+title+'</h4><div class="keyword-tags">';
+                (items||[]).forEach(function(k){ d.innerHTML += '<span class="keyword-tag '+cls+'">'+k+'</span>'; });
+                d.innerHTML += '</div>';
             }
-            foundDiv.innerHTML += '</div>';
-
-            // Keywords missing
-            const missingDiv = document.getElementById('keywords-missing');
-            missingDiv.innerHTML = '<h4>Missing Keywords:</h4><div class="keyword-tags">';
-            if (result.keyword_match && result.keyword_match.missing) {
-                result.keyword_match.missing.forEach(k => {
-                    missingDiv.innerHTML += `<span class="keyword-tag keyword-missing">${k}</span>`;
-                });
+            renderTags('keywords-found','Keywords Found', r.keyword_match&&r.keyword_match.found, 'keyword-found');
+            renderTags('keywords-missing','Missing Keywords', r.keyword_match&&r.keyword_match.missing, 'keyword-missing');
+            // Issues & feedback
+            function renderList(id, title, items) {
+                var d = $(id); d.innerHTML = '<h4>'+title+'</h4>';
+                (items||[]).forEach(function(x){ d.innerHTML += '<div class="suggestion-item">'+x+'</div>'; });
             }
-            missingDiv.innerHTML += '</div>';
-
-            // Format issues
-            const formatDiv = document.getElementById('format-issues');
-            formatDiv.innerHTML = '<h4>Format Issues:</h4>';
-            if (result.format_issues) {
-                result.format_issues.forEach(i => {
-                    formatDiv.innerHTML += `<div class="suggestion-item">${i}</div>`;
-                });
-            }
-
-            // Content feedback
-            const feedbackDiv = document.getElementById('content-feedback');
-            feedbackDiv.innerHTML = '<h4>Content Feedback:</h4>';
-            if (result.content_feedback) {
-                result.content_feedback.forEach(f => {
-                    feedbackDiv.innerHTML += `<div class="suggestion-item">${f}</div>`;
-                });
-            }
-
+            renderList('format-issues','Format Issues', r.format_issues);
+            renderList('content-feedback','Content Feedback', r.content_feedback);
             show('ats-result');
-        } catch (err) {
-            hide('loading');
-            alert('Error: ' + err.message);
-        }
+        } catch(err) { hide('loading'); alert('Error: '+err.message); }
     });
 }
 
-// ─── COVER LETTER FORM ───
-const clForm = document.getElementById('cover-letter-form');
-if (clForm) {
-    clForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const data = {
-            resume_text: document.getElementById('cl_resume_text').value,
-            job_description: document.getElementById('cl_job_description').value
-        };
-
-        hide('cover-letter-result');
-        show('loading');
-
+// PDF Upload
+document.querySelectorAll('.upload-pdf-btn').forEach(function(btn) {
+    btn.addEventListener('click', async function() {
+        var input = btn.parentElement.querySelector('.file-input');
+        var status = btn.parentElement.querySelector('.upload-status-text');
+        if (!input.files.length) { alert('Select a PDF file first.'); return; }
+        var fd = new FormData(); fd.append('file', input.files[0]);
+        status.textContent = 'Extracting...'; btn.disabled = true;
         try {
-            const result = await apiCall('/api/cover-letter', data);
-            hide('loading');
-
-            if (result.cover_letter) {
-                document.getElementById('cover-letter-text').textContent = result.cover_letter;
-                show('cover-letter-result');
-            }
-        } catch (err) {
-            hide('loading');
-            alert('Error: ' + err.message);
-        }
+            var res = await (await fetch('/api/upload-resume', {method:'POST', body:fd})).json();
+            if (res.error) status.textContent = 'Error: '+res.error;
+            else { $(btn.dataset.target).value = res.text; status.textContent = 'Done!'; }
+        } catch(err) { status.textContent = 'Upload failed.'; }
+        btn.disabled = false;
     });
-}
-
-// ─── COPY TO CLIPBOARD ───
-function copyToClipboard() {
-    const text = document.getElementById('cover-letter-text').textContent;
-    navigator.clipboard.writeText(text).then(() => {
-        alert('Copied to clipboard!');
-    });
-}
+});

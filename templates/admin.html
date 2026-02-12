@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - ResumeAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand">ResumeAI</a>
+        <div class="nav-links">
+            <span class="nav-user">Admin Panel</span>
+            <a href="/" class="btn btn-small">Back</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>All Users</h2>
+        <p class="subtitle">{{ users|length }} registered users</p>
+
+        <div class="versions-list">
+            {% for user in users %}
+            <div class="version-card">
+                <div class="version-info">
+                    <span class="version-badge">ID {{ user.id }}</span>
+                    <span class="version-label">{{ user.name }}</span>
+                    <span class="version-template">{{ user.resume_count }} resumes</span>
+                    <span class="version-date">Joined: {{ user.created_at }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

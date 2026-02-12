@@ -5,13 +5,27 @@
     <title>{{ resume.name }} - Resume</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Courier New', monospace; color: #111; max-width: 750px; margin: 0 auto; padding: 40px; line-height: 1.6; font-size: 14px; }
-        .header { margin-bottom: 25px; }
-        .header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+        body {
+            font-family: 'Courier New', monospace;
+            color: #111;
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 40px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        .header { margin-bottom: 20px; }
+        .header h1 { font-size: 24px; font-weight: 700; }
         .header .contact { font-size: 13px; color: #444; margin-top: 4px; }
-        .divider { border: none; border-top: 1px solid #ddd; margin: 15px 0; }
+        .divider { border: none; border-top: 1px solid #ddd; margin: 18px 0; }
         .section { margin-bottom: 18px; }
-        .section h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 3px; color: #888; margin-bottom: 8px; }
+        .section h2 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #555;
+            margin-bottom: 8px;
+        }
         .summary { color: #444; }
         .entry { margin-bottom: 12px; }
         .entry-header { font-weight: 700; }
@@ -23,13 +37,15 @@
     </style>
 </head>
 <body>
+
     <div class="header">
         <h1>{{ resume.name }}</h1>
         <div class="contact">
-            {{ resume.email }}{% if resume.phone %} / {{ resume.phone }}{% endif %}{% if resume.location %} / {{ resume.location }}{% endif %}
+            {{ resume.email }}
+            {% if resume.phone %}, {{ resume.phone }}{% endif %}
+            {% if resume.location %}, {{ resume.location }}{% endif %}
         </div>
     </div>
-    <hr class="divider">
 
     {% if resume.summary %}
     <div class="section">
@@ -63,8 +79,10 @@
         {% for edu in resume.education %}
         <div class="entry">
             <div class="entry-header">{{ edu.degree }}</div>
-            <div class="entry-sub">{{ edu.school }} — {{ edu.year }}</div>
-            {% if edu.details %}<p>{{ edu.details }}</p>{% endif %}
+            <div class="entry-sub">
+                {{ edu.school }}{% if edu.year %}, {{ edu.year }}{% endif %}
+            </div>
+            {% if edu.details %}<p class="summary">{{ edu.details }}</p>{% endif %}
         </div>
         {% endfor %}
     </div>
@@ -77,8 +95,10 @@
         {% for project in resume.projects %}
         <div class="entry">
             <div class="entry-header">{{ project.name }}</div>
-            {% if project.tech %}<div class="entry-sub">{{ project.tech }}</div>{% endif %}
-            <p>{{ project.description }}</p>
+            {% if project.tech %}
+            <div class="entry-sub">{{ project.tech }}</div>
+            {% endif %}
+            <p class="summary">{{ project.description }}</p>
         </div>
         {% endfor %}
     </div>
@@ -88,7 +108,9 @@
     {% if resume.skills %}
     <div class="section">
         <h2>Skills</h2>
-        <p class="skills-list">{{ resume.skills | join(' / ') }}</p>
+        <p class="skills-list">
+            {{ resume.skills | join(', ') }}
+        </p>
     </div>
     {% endif %}
 
@@ -103,5 +125,6 @@
         </ul>
     </div>
     {% endif %}
+
 </body>
 </html>

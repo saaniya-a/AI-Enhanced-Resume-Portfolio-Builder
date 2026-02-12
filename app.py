@@ -1,174 +1,149 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import json
-import os
-from database import init_db, get_or_create_user, save_resume, get_user_resumes, get_resume_by_id, save_cover_letter
-from ai_helper import generate_resume, optimize_resume, check_ats, generate_cover_letter
+from database import (init_db, get_or_create_user, save_resume, get_user_resumes,
+                      get_resume_by_id, delete_resume, rename_resume)
+from ai_helper import generate_resume, optimize_resume, check_ats
 
 app = Flask(__name__)
 app.secret_key = 'hackathon-resume-builder-2024'
-
-# Initialize database on startup
 init_db()
 
+def logged_in():
+    return 'user_id' in session
 
-# ─── LANDING PAGE (Name Entry) ───
+def render_resume(resume_id):
+    resume = get_resume_by_id(resume_id)
+    if not resume: return None, None
+    content = json.loads(resume['content'])
+    t = resume.get('template', 'classic')
+    tpl = 'resume_templates/text.html' if (t == 'text' or 'text' in content) else f'resume_templates/{t}.html'
+    return content, tpl
+
+# ─── PAGE ROUTES ───
+
 @app.route('/', methods=['GET', 'POST'])
 def landing():
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
-        if name:
-            user = get_or_create_user(name)
+        email = request.form.get('email', '').strip()
+        if name and email:
+            user = get_or_create_user(name, email)
             session['user_id'] = user['id']
             session['user_name'] = user['name']
-            return redirect(url_for('dashboard'))
-    return render_template('landing.html')
+            return redirect(url_for('landing'))
+    user_name = session.get('user_name') if logged_in() else None
+    return render_template('landing.html', user_name=user_name)
 
-
-# ─── DASHBOARD ───
 @app.route('/dashboard')
 def dashboard():
-    if 'user_id' not in session:
-        return redirect(url_for('landing'))
-    resumes = get_user_resumes(session['user_id'])
-    return render_template('dashboard.html', user_name=session['user_name'], resumes=resumes)
+    return redirect(url_for('landing'))
 
-
-# ─── RESUME BUILDER (From Scratch) ───
-@app.route('/builder', methods=['GET', 'POST'])
+@app.route('/builder')
 def builder():
-    if 'user_id' not in session:
-        return redirect(url_for('landing'))
+    if not logged_in(): return redirect(url_for('landing'))
     return render_template('builder.html', user_name=session['user_name'])
 
-
-@app.route('/api/build-resume', methods=['POST'])
-def api_build_resume():
-    if 'user_id' not in session:
-        return jsonify({'error': 'Not logged in'}), 401
-
-    data = request.json
-    result = generate_resume(data)
-    resume_id, version = save_resume(
-        user_id=session['user_id'],
-        content=json.dumps(result),
-        template=data.get('template', 'classic')
-    )
-    return jsonify({'resume': result, 'resume_id': resume_id, 'version': version})
-
-
-# ─── RESUME OPTIMIZER ───
-@app.route('/optimizer', methods=['GET', 'POST'])
+@app.route('/optimizer')
 def optimizer():
-    if 'user_id' not in session:
-        return redirect(url_for('landing'))
+    if not logged_in(): return redirect(url_for('landing'))
     return render_template('optimizer.html', user_name=session['user_name'])
 
+@app.route('/versions')
+def versions():
+    if not logged_in(): return redirect(url_for('landing'))
+    return render_template('versions.html', user_name=session['user_name'], resumes=get_user_resumes(session['user_id']))
 
-@app.route('/api/optimize-resume', methods=['POST'])
-def api_optimize_resume():
-    if 'user_id' not in session:
-        return jsonify({'error': 'Not logged in'}), 401
-
-    data = request.json
-    resume_text = data.get('resume_text', '')
-    job_description = data.get('job_description', '')
-
-    result = optimize_resume(resume_text, job_description)
-    resume_id, version = save_resume(
-        user_id=session['user_id'],
-        content=json.dumps(result),
-        job_description=job_description,
-        ats_score=result.get('ats_score')
-    )
-    return jsonify({'result': result, 'resume_id': resume_id, 'version': version})
-
-
-# ─── ATS CHECKER ───
-@app.route('/api/ats-check', methods=['POST'])
-def api_ats_check():
-    if 'user_id' not in session:
-        return jsonify({'error': 'Not logged in'}), 401
-
-    data = request.json
-    resume_text = data.get('resume_text', '')
-    job_description = data.get('job_description', '')
-
-    result = check_ats(resume_text, job_description)
-    return jsonify(result)
-
-
-# ─── COVER LETTER ───
-@app.route('/cover-letter', methods=['GET'])
-def cover_letter_page():
-    if 'user_id' not in session:
-        return redirect(url_for('landing'))
-    return render_template('cover_letter.html', user_name=session['user_name'])
-
-
-@app.route('/api/cover-letter', methods=['POST'])
-def api_cover_letter():
-    if 'user_id' not in session:
-        return jsonify({'error': 'Not logged in'}), 401
-
-    data = request.json
-    resume_text = data.get('resume_text', '')
-    job_description = data.get('job_description', '')
-
-    result = generate_cover_letter(resume_text, job_description)
-    save_cover_letter(session['user_id'], None, result, job_description)
-    return jsonify({'cover_letter': result})
-
-
-# ─── RESUME PREVIEW ───
 @app.route('/preview/<int:resume_id>')
 def preview(resume_id):
-    resume = get_resume_by_id(resume_id)
-    if not resume:
-        return "Resume not found", 404
-    content = json.loads(resume['content'])
-    template = resume.get('template', 'classic')
-    return render_template(f'resume_templates/{template}.html', resume=content)
+    content, tpl = render_resume(resume_id)
+    if not content: return "Resume not found", 404
+    return render_template(tpl, resume=content)
 
-
-# ─── PORTFOLIO (Shareable Link) ───
 @app.route('/portfolio/<int:resume_id>')
 def portfolio(resume_id):
     resume = get_resume_by_id(resume_id)
-    if not resume:
-        return "Portfolio not found", 404
-    content = json.loads(resume['content'])
-    return render_template('portfolio.html', resume=content)
+    if not resume: return "Not found", 404
+    return render_template('portfolio.html', resume=json.loads(resume['content']))
 
-
-# ─── PDF EXPORT (opens printable page → user hits Ctrl+P / Cmd+P) ───
 @app.route('/export/<int:resume_id>')
 def export_pdf(resume_id):
-    resume = get_resume_by_id(resume_id)
-    if not resume:
-        return "Resume not found", 404
-    content = json.loads(resume['content'])
-    template = resume.get('template', 'classic')
-    html = render_template(f'resume_templates/{template}.html', resume=content)
-    # Add a print script so the browser auto-opens the print dialog
-    print_script = '<script>window.onload = function() { window.print(); }</script>'
-    return html + print_script
+    content, tpl = render_resume(resume_id)
+    if not content: return "Resume not found", 404
+    return render_template(tpl, resume=content) + '<script>window.onload=function(){window.print()}</script>'
 
+@app.route('/admin')
+def admin():
+    from database import get_db
+    db = get_db()
+    users = [dict(r) for r in db.execute(
+        'SELECT users.id, users.name, users.created_at, COUNT(resumes.id) as resume_count '
+        'FROM users LEFT JOIN resumes ON users.id = resumes.user_id '
+        'GROUP BY users.id ORDER BY users.created_at DESC').fetchall()]
+    db.close()
+    return render_template('admin.html', users=users)
 
-# ─── VERSION HISTORY ───
-@app.route('/versions')
-def versions():
-    if 'user_id' not in session:
-        return redirect(url_for('landing'))
-    resumes = get_user_resumes(session['user_id'])
-    return render_template('versions.html', user_name=session['user_name'], resumes=resumes)
-
-
-# ─── LOGOUT ───
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('landing'))
 
+# ─── API ROUTES ───
+
+@app.route('/api/build-resume', methods=['POST'])
+def api_build_resume():
+    if not logged_in(): return jsonify({'error': 'Not logged in'}), 401
+    data = request.json
+    result = generate_resume(data)
+    rid, ver = save_resume(session['user_id'], json.dumps(result), template=data.get('template', 'classic'))
+    return jsonify({'resume': result, 'resume_id': rid, 'version': ver})
+
+@app.route('/api/optimize-resume', methods=['POST'])
+def api_optimize_resume():
+    if not logged_in(): return jsonify({'error': 'Not logged in'}), 401
+    data = request.json
+    result = optimize_resume(data.get('resume_text', ''), data.get('job_description', ''))
+    rid, ver = save_resume(session['user_id'], json.dumps(result), job_description=data.get('job_description', ''), ats_score=result.get('ats_score'))
+    return jsonify({'result': result, 'resume_id': rid, 'version': ver})
+
+@app.route('/api/ats-check', methods=['POST'])
+def api_ats_check():
+    if not logged_in(): return jsonify({'error': 'Not logged in'}), 401
+    data = request.json
+    return jsonify(check_ats(data.get('resume_text', ''), data.get('job_description', '')))
+
+@app.route('/api/upload-resume', methods=['POST'])
+def api_upload_resume():
+    if not logged_in(): return jsonify({'error': 'Not logged in'}), 401
+    file = request.files.get('file')
+    if not file: return jsonify({'error': 'No file'}), 400
+    try:
+        from PyPDF2 import PdfReader
+        text = '\n'.join(page.extract_text() for page in PdfReader(file).pages)
+        return jsonify({'text': text.strip()})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/apply-changes', methods=['POST'])
+def api_apply_changes():
+    if not logged_in(): return jsonify({'error': 'Not logged in'}), 401
+    data = request.json
+    text = data.get('resume_text', '')
+    for change in data.get('changes', []):
+        text = text.replace(change['original'], change['improved'])
+    rid, ver = save_resume(session['user_id'], json.dumps({"text": text}), template='text', label='Optimized')
+    return jsonify({'resume_id': rid, 'version': ver})
+
+@app.route('/api/delete-resume/<int:resume_id>', methods=['POST'])
+def api_delete_resume(resume_id):
+    if not logged_in(): return jsonify({'error': 'Not logged in'}), 401
+    delete_resume(resume_id, session['user_id'])
+    return jsonify({'success': True})
+
+@app.route('/api/rename-resume/<int:resume_id>', methods=['POST'])
+def api_rename_resume(resume_id):
+    if not logged_in(): return jsonify({'error': 'Not logged in'}), 401
+    rename_resume(resume_id, session['user_id'], request.json.get('label', ''))
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

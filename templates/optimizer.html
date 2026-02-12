@@ -8,10 +8,10 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="/dashboard" class="nav-brand">ResumeAI</a>
+        <a href="/" class="nav-brand">ResumeAI</a>
         <div class="nav-links">
             <span class="nav-user">Hi, {{ user_name }}</span>
-            <a href="/dashboard" class="btn btn-small">Back</a>
+            <a href="/" class="btn btn-small">Back</a>
         </div>
     </nav>
 
@@ -23,8 +23,16 @@
             <div class="form-section">
                 <h3>Your Current Resume</h3>
                 <div class="input-group">
-                    <label for="resume_text">Paste your full resume text</label>
-                    <textarea id="resume_text" name="resume_text" rows="12" required placeholder="Paste your entire resume here..."></textarea>
+                    <label>Upload a PDF resume or paste text below</label>
+                    <div class="upload-row">
+                        <input type="file" id="resume_file" accept=".pdf" class="file-input">
+                        <button type="button" class="btn btn-secondary btn-small upload-pdf-btn" data-target="resume_text">Upload PDF</button>
+                        <span class="upload-status-text" style="font-size:13px;color:#888;"></span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="resume_text">Or paste your resume text</label>
+                    <textarea id="resume_text" name="resume_text" rows="12" required placeholder="Paste your entire resume here, or upload a PDF above..."></textarea>
                 </div>
             </div>
 
@@ -37,12 +45,8 @@
             </div>
 
             <div class="btn-group">
-                <button type="submit" class="btn btn-primary btn-large" id="optimize-btn">
-                    Optimize with AI
-                </button>
-                <button type="button" class="btn btn-secondary btn-large" id="ats-check-btn">
-                    Run ATS Check Only
-                </button>
+                <button type="submit" class="btn btn-primary btn-large">Optimize with AI</button>
+                <button type="button" class="btn btn-secondary btn-large" id="ats-check-btn">Run ATS Check Only</button>
             </div>
         </form>
 
@@ -55,27 +59,53 @@
         <div id="optimize-result" class="result-section hidden">
             <h3>Optimization Results</h3>
 
-            <div id="score-display" class="score-card">
-                <div class="score-number">--</div>
-                <div class="score-label">ATS Score</div>
+            <!-- Visual Score Gauge -->
+            <div class="score-gauge">
+                <svg viewBox="0 0 120 120" class="gauge-svg">
+                    <circle cx="60" cy="60" r="50" class="gauge-bg"></circle>
+                    <circle cx="60" cy="60" r="50" class="gauge-fill" id="opt-gauge-fill"></circle>
+                    <text x="60" y="55" class="gauge-number" id="opt-gauge-number">--</text>
+                    <text x="60" y="72" class="gauge-label">ATS Score</text>
+                </svg>
             </div>
 
+            <!-- Side by Side Changes with checkboxes -->
+            <h4 style="margin-bottom: 12px;">Review Changes <span style="font-weight:normal;color:#888;font-size:13px;">(check the ones you want to apply)</span></h4>
             <div id="changes-list" class="changes-section"></div>
-            <div id="suggestions-list" class="suggestions-section"></div>
 
-            <div class="result-actions">
-                <a id="preview-link" href="#" target="_blank" class="btn btn-primary">Full Preview</a>
-                <a id="pdf-link" href="#" class="btn btn-secondary">Download PDF</a>
+            <div class="result-actions" style="margin-bottom: 20px;">
+                <button class="btn btn-primary" id="apply-changes-btn">Apply Selected Changes & Generate Final Resume</button>
             </div>
+
+            <div id="apply-loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Generating final resume...</p>
+            </div>
+
+            <div id="final-result" class="hidden" style="margin-top:15px; padding:15px; background:#e6ffed; border-radius:8px; border:1px solid #27ae60;">
+                <h4 style="color:#27ae60;">Final Resume Ready!</h4>
+                <div class="result-actions" style="margin-top:10px;">
+                    <a id="final-preview-link" href="#" target="_blank" class="btn btn-primary">Preview Final Resume</a>
+                    <a id="final-pdf-link" href="#" class="btn btn-secondary">Download PDF</a>
+                </div>
+            </div>
+
+            <h4 style="margin: 20px 0 12px;">Suggestions</h4>
+            <div id="suggestions-list" class="suggestions-section"></div>
         </div>
 
         <!-- ATS Check Results -->
         <div id="ats-result" class="result-section hidden">
             <h3>ATS Analysis</h3>
 
-            <div id="ats-score-display" class="score-card">
-                <div class="score-number">--</div>
-                <div class="score-label">ATS Score</div>
+            <!-- Visual Score Gauge -->
+            <div class="score-gauge">
+                <svg viewBox="0 0 120 120" class="gauge-svg">
+                    <circle cx="60" cy="60" r="50" class="gauge-bg"></circle>
+                    <circle cx="60" cy="60" r="50" class="gauge-fill" id="ats-gauge-fill"></circle>
+                    <text x="60" y="55" class="gauge-number" id="ats-gauge-number">--</text>
+                    <text x="60" y="72" class="gauge-label">ATS Score</text>
+                </svg>
             </div>
 
             <div class="ats-details">

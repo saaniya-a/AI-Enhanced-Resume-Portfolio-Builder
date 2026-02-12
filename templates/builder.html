@@ -8,10 +8,10 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="/dashboard" class="nav-brand">ResumeAI</a>
+        <a href="/" class="nav-brand">ResumeAI</a>
         <div class="nav-links">
             <span class="nav-user">Hi, {{ user_name }}</span>
-            <a href="/dashboard" class="btn btn-small">Back</a>
+            <a href="/" class="btn btn-small">Back</a>
         </div>
     </nav>
 
@@ -56,7 +56,7 @@
                 <h3>Experience</h3>
                 <div class="input-group">
                     <label for="experience">Describe your work experience</label>
-                    <textarea id="experience" name="experience" rows="6" placeholder="e.g. Worked as intern at ABC company for 3 months. Built a dashboard using React. Helped the team fix bugs."></textarea>
+                    <textarea id="experience" name="experience" rows="6" placeholder="e.g. Worked as intern at ABC company for 3 months. Built a dashboard using React."></textarea>
                 </div>
             </div>
 
@@ -64,7 +64,7 @@
                 <h3>Projects</h3>
                 <div class="input-group">
                     <label for="projects">Describe your projects</label>
-                    <textarea id="projects" name="projects" rows="6" placeholder="e.g. Built a todo app using Python and Flask. It has user login and database. Used by 50 students in my class."></textarea>
+                    <textarea id="projects" name="projects" rows="6" placeholder="e.g. Built a todo app using Python and Flask. It has user login and database."></textarea>
                 </div>
             </div>
 
@@ -72,7 +72,7 @@
                 <h3>Skills</h3>
                 <div class="input-group">
                     <label for="skills">List your skills (comma separated)</label>
-                    <textarea id="skills" name="skills" rows="3" placeholder="e.g. Python, JavaScript, React, SQL, Git, Problem Solving"></textarea>
+                    <textarea id="skills" name="skills" rows="3" placeholder="e.g. Python, JavaScript, React, SQL, Git"></textarea>
                 </div>
             </div>
 
@@ -85,19 +85,30 @@
             </div>
 
             <div class="form-section">
+                <h3>Target Job (Optional)</h3>
+                <div class="input-group">
+                    <label for="job_description">Paste the job description you're applying for</label>
+                    <textarea id="job_description" name="job_description" rows="5" placeholder="Paste the job listing here. AI will tailor your resume with relevant keywords and focus areas."></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
                 <h3>Template</h3>
                 <div class="template-selector">
                     <label class="template-option">
                         <input type="radio" name="template" value="classic" checked>
                         <span class="template-label">Classic</span>
+                        <span class="template-desc">Traditional serif font, clean layout</span>
                     </label>
                     <label class="template-option">
                         <input type="radio" name="template" value="modern">
                         <span class="template-label">Modern</span>
+                        <span class="template-desc">Sans-serif, bold headings, sleek look</span>
                     </label>
                     <label class="template-option">
                         <input type="radio" name="template" value="minimal">
                         <span class="template-label">Minimal</span>
+                        <span class="template-desc">Monospace font, compact and simple</span>
                     </label>
                 </div>
             </div>
@@ -114,7 +125,7 @@
 
         <div id="result" class="result-section hidden">
             <h3>Your Resume is Ready!</h3>
-            <div id="resume-preview" class="resume-preview"></div>
+            <div id="resume-preview" class="resume-preview-formatted"></div>
             <div class="result-actions">
                 <a id="preview-link" href="#" target="_blank" class="btn btn-primary">Full Preview</a>
                 <a id="pdf-link" href="#" class="btn btn-secondary">Download PDF</a>

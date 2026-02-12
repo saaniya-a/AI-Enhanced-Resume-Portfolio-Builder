@@ -8,23 +8,24 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="/dashboard" class="nav-brand">ResumeAI</a>
+        <a href="/" class="nav-brand">ResumeAI</a>
         <div class="nav-links">
             <span class="nav-user">Hi, {{ user_name }}</span>
-            <a href="/dashboard" class="btn btn-small">Back</a>
+            <a href="/" class="btn btn-small">Back</a>
         </div>
     </nav>
 
     <div class="container">
         <h2>My Resume Versions</h2>
-        <p class="subtitle">Every resume you generate is saved here. Nothing is overwritten.</p>
+        <p class="subtitle">Every resume you generate is saved here. You can rename or delete them.</p>
 
         {% if resumes %}
         <div class="versions-list">
             {% for resume in resumes %}
-            <div class="version-card">
+            <div class="version-card" id="version-{{ resume.id }}">
                 <div class="version-info">
                     <span class="version-badge">v{{ resume.version }}</span>
+                    <span class="version-label" id="label-{{ resume.id }}">{{ resume.label or 'Untitled' }}</span>
                     <span class="version-template">{{ resume.template }}</span>
                     <span class="version-date">{{ resume.created_at }}</span>
                     {% if resume.ats_score %}
@@ -34,7 +35,8 @@
                 <div class="version-actions">
                     <a href="/preview/{{ resume.id }}" target="_blank" class="btn btn-small">Preview</a>
                     <a href="/export/{{ resume.id }}" class="btn btn-small btn-secondary">PDF</a>
-                    <a href="/portfolio/{{ resume.id }}" target="_blank" class="btn btn-small btn-secondary">Portfolio</a>
+                    <button class="btn btn-small btn-secondary" onclick="renameVersion({{ resume.id }})">Rename</button>
+                    <button class="btn btn-small btn-danger" onclick="deleteVersion({{ resume.id }})">Delete</button>
                 </div>
             </div>
             {% endfor %}
@@ -45,5 +47,29 @@
         </div>
         {% endif %}
     </div>
+
+    <script>
+    function renameVersion(id) {
+        var newName = prompt('Enter a name for this version:');
+        if (newName === null) return;
+        fetch('/api/rename-resume/' + id, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({label: newName})
+        }).then(function() {
+            document.getElementById('label-' + id).textContent = newName || 'Untitled';
+        });
+    }
+
+    function deleteVersion(id) {
+        if (!confirm('Delete this version? This cannot be undone.')) return;
+        fetch('/api/delete-resume/' + id, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        }).then(function() {
+            document.getElementById('version-' + id).remove();
+        });
+    }
+    </script>
 </body>
 </html>
