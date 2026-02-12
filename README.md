@@ -120,3 +120,14 @@ Open in browser
 - In-line edit options
 - User authentication
 
+## Learnings
+
+- Gained hands-on experience designing a full-stack web application using **Flask**, **Jinja templates**, and **SQLite**.
+- Learned how to structure a backend application by separating concerns into modules such as routing (`app.py`), database logic (`database.py`), and AI utilities (`ai_helper.py`).
+- Understood how to securely manage **API keys and environment variables** using `.env` files instead of hardcoding sensitive data.
+- Learned how **ATS (Applicant Tracking Systems)** parse resumes and why standard section headings, clean layouts, and keyword alignment are important.
+- Improved prompt engineering skills by crafting structured prompts that return **strict JSON outputs** from AI models.
+- Gained experience handling **API rate limits, quota errors, and fallback logic** when external AI services are unavailable.
+- Learned how resume templates impact ATS readability and how to design **ATS-compliant HTML templates**.
+
+
