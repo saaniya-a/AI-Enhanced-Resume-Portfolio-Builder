@@ -41,7 +41,6 @@ ResumeAI solves this by combining structured resume input, AI-powered optimizati
 ### Frontend
 - HTML
 - CSS
-- Vanilla JavaScript
 
 ### Backend
 - Python
@@ -51,7 +50,7 @@ ResumeAI solves this by combining structured resume input, AI-powered optimizati
 - SQLite (file-based, no setup required)
 
 ### AI Integration
-- Google Gemini API  
+- Grok AI API  
 
 ## Installation & Setup
 
