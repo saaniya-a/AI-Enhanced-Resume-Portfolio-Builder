@@ -3,6 +3,10 @@ import json
 from database import (init_db, get_or_create_user, save_resume, get_user_resumes,
                       get_resume_by_id, delete_resume, rename_resume)
 from ai_helper import generate_resume, optimize_resume, check_ats
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'hackathon-resume-builder-2024'
@@ -87,6 +91,60 @@ def logout():
     session.clear()
     return redirect(url_for('landing'))
 
+@app.route('/build', methods=['POST'])
+def build():
+    if not logged_in():
+        return redirect(url_for('landing'))
+    data = request.form.to_dict()
+    # Generate resume server-side and save it so preview/pdf links work without JS
+    result = generate_resume(data)
+    rid, ver = save_resume(session['user_id'], json.dumps(result), template=data.get('template', 'classic'))
+    return render_template('builder.html', user_name=session['user_name'], resume=result, resume_id=rid)
+
+@app.route('/optimize', methods=['POST'])
+def optimize():
+    if not logged_in(): return redirect(url_for('landing'))
+    resume_text = request.form.get('resume_text','')
+    job_description = request.form.get('job_description','')
+    # Run optimization and save
+    result = optimize_resume(resume_text, job_description)
+    rid, ver = save_resume(session['user_id'], json.dumps(result), job_description=job_description, ats_score=result.get('ats_score'))
+    return render_template('optimizer.html', user_name=session['user_name'], result=result, resume_id=rid)
+
+@app.route('/ats-check', methods=['POST'])
+def ats_check_form():
+    if not logged_in(): return redirect(url_for('landing'))
+    resume_text = request.form.get('resume_text','')
+    job_description = request.form.get('job_description','')
+    result = check_ats(resume_text, job_description)
+    return render_template('optimizer.html', user_name=session['user_name'], ats=result)
+
+@app.route('/upload-resume', methods=['POST'])
+def upload_resume_form():
+    if not logged_in(): return redirect(url_for('landing'))
+    file = request.files.get('file')
+    if not file:
+        return render_template('optimizer.html', user_name=session['user_name'], upload_error='No file uploaded')
+    try:
+        from PyPDF2 import PdfReader
+        text = '\n'.join(page.extract_text() for page in PdfReader(file).pages)
+        return render_template('optimizer.html', user_name=session['user_name'], uploaded_text=text)
+    except Exception as e:
+        return render_template('optimizer.html', user_name=session['user_name'], upload_error=str(e))
+
+@app.route('/delete-resume/<int:resume_id>', methods=['POST'])
+def delete_resume_form(resume_id):
+    if not logged_in(): return redirect(url_for('landing'))
+    delete_resume(resume_id, session['user_id'])
+    return redirect(url_for('versions'))
+
+@app.route('/rename-resume/<int:resume_id>', methods=['POST'])
+def rename_resume_form(resume_id):
+    if not logged_in(): return redirect(url_for('landing'))
+    label = request.form.get('label','')
+    rename_resume(resume_id, session['user_id'], label)
+    return redirect(url_for('versions'))
+
 # ─── API ROUTES ───
 
 @app.route('/api/build-resume', methods=['POST'])
@@ -146,4 +204,7 @@ def api_rename_resume(resume_id):
     return jsonify({'success': True})
 
 if __name__ == '__main__':
+    # Print sensitive info only when running locally (not when imported by WSGI)
+    print("API KEY:", os.getenv("OPENAI_API_KEY"))
+    print("Current working directory:", os.getcwd())
     app.run(debug=True, port=5001)

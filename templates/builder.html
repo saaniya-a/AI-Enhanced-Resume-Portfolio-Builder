@@ -19,7 +19,8 @@
         <h2>Build Your Resume</h2>
         <p class="subtitle">Fill in your details. AI will structure and polish everything.</p>
 
-        <form id="resume-form" class="resume-form">
+        <!--<form id="resume-form" class="resume-form">-->
+        <form method="POST" action="/build" class="resume-form">
             <div class="form-section">
                 <h3>Personal Information</h3>
                 <div class="form-row">
@@ -123,15 +124,28 @@
             <p>AI is building your resume...</p>
         </div>
 
-        <div id="result" class="result-section hidden">
-            <h3>Your Resume is Ready!</h3>
-            <div id="resume-preview" class="resume-preview-formatted"></div>
+        {% if resume %}
+        <div id="result" class="result-section">
+             <h3>Your Resume is Ready!</h3>
+            <div id="resume-preview" class="resume-preview-formatted">
+                <h2>{{ resume.name }}</h2>
+                <p class="preview-contact">{{ resume.email }}{% if resume.phone %} | {{ resume.phone }}{% endif %}{% if resume.location %} | {{ resume.location }}{% endif %}</p>
+                {% if resume.summary %}<div class="preview-section"><h3>Summary</h3><p>{{ resume.summary }}</p></div>{% endif %}
+                {% if resume.experience %}
+                <div class="preview-section"><h3>Experience</h3>
+                    {% for e in resume.experience %}
+                    <div class="preview-entry"><div class="preview-entry-header"><strong>{{ e.title }}</strong><span>{{ e.duration }}</span></div>{% if e.company %}<div class="preview-entry-sub">{{ e.company }}</div>{% endif %}{% if e.bullets %}<ul>{% for b in e.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
             <div class="result-actions">
-                <a id="preview-link" href="#" target="_blank" class="btn btn-primary">Full Preview</a>
-                <a id="pdf-link" href="#" class="btn btn-secondary">Download PDF</a>
-                <a id="portfolio-link" href="#" target="_blank" class="btn btn-secondary">Portfolio Link</a>
+                <a id="preview-link" href="/preview/{{ resume_id }}" target="_blank" class="btn btn-primary">Full Preview</a>
+                <a id="pdf-link" href="/export/{{ resume_id }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Download PDF</a>
+                <a id="portfolio-link" href="/portfolio/{{ resume_id }}" target="_blank" class="btn btn-secondary">Portfolio Link</a>
             </div>
         </div>
+        {% endif %}
     </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

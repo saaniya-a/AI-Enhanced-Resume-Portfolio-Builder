@@ -94,11 +94,13 @@
         <div class="entry">
             <div class="entry-title">{{ exp.title }} — {{ exp.company }}</div>
             <div class="entry-meta">{{ exp.duration }}</div>
+            {% if exp.bullets %}
             <ul>
                 {% for bullet in exp.bullets %}
                 <li>{{ bullet }}</li>
                 {% endfor %}
             </ul>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
@@ -109,4 +111,50 @@
         <h2>Education</h2>
         {% for edu in resume.education %}
         <div class="entry">
-            <div class="
+            <div class="entry-title">{{ edu.degree }}</div>
+            <div class="entry-meta">{{ edu.school }}{% if edu.year %}, {{ edu.year }}{% endif %}</div>
+            {% if edu.details %}
+            <p class="summary">{{ edu.details }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if resume.projects %}
+    <div class="section">
+        <h2>Projects</h2>
+        {% for project in resume.projects %}
+        <div class="entry">
+            <div class="entry-title">{{ project.name }}</div>
+            {% if project.tech %}
+            <div class="entry-meta">{{ project.tech }}</div>
+            {% endif %}
+            {% if project.description %}
+            <p class="summary">{{ project.description }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if resume.skills %}
+    <div class="section">
+        <h2>Skills</h2>
+        <p class="skills-text">{{ resume.skills | join(', ') }}</p>
+    </div>
+    {% endif %}
+
+    {% if resume.certifications %}
+    <div class="section">
+        <h2>Certifications</h2>
+        <ul>
+            {% for cert in resume.certifications %}
+            <li>{{ cert }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+</body>
+</html>

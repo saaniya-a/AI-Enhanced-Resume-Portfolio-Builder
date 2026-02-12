@@ -19,14 +19,14 @@
         <h2>Optimize Your Resume</h2>
         <p class="subtitle">Paste your resume and a job description. AI will optimize it.</p>
 
-        <form id="optimizer-form" class="resume-form">
+        <form id="optimizer-form" class="resume-form" method="POST" action="/optimize">
             <div class="form-section">
                 <h3>Your Current Resume</h3>
                 <div class="input-group">
                     <label>Upload a PDF resume or paste text below</label>
                     <div class="upload-row">
-                        <input type="file" id="resume_file" accept=".pdf" class="file-input">
-                        <button type="button" class="btn btn-secondary btn-small upload-pdf-btn" data-target="resume_text">Upload PDF</button>
+                        <input type="file" id="resume_file" name="file" accept=".pdf" class="file-input">
+                        <button type="submit" class="btn btn-secondary btn-small">Upload PDF</button>
                         <span class="upload-status-text" style="font-size:13px;color:#888;"></span>
                     </div>
                 </div>
@@ -46,7 +46,7 @@
 
             <div class="btn-group">
                 <button type="submit" class="btn btn-primary btn-large">Optimize with AI</button>
-                <button type="button" class="btn btn-secondary btn-large" id="ats-check-btn">Run ATS Check Only</button>
+                <button type="submit" formaction="/ats-check" formmethod="post" class="btn btn-secondary btn-large" id="ats-check-btn">Run ATS Check Only</button>
             </div>
         </form>
 
@@ -56,65 +56,76 @@
         </div>
 
         <!-- Optimization Results -->
-        <div id="optimize-result" class="result-section hidden">
+        {% if result %}
+        <div id="optimize-result" class="result-section">
             <h3>Optimization Results</h3>
-
-            <!-- Visual Score Gauge -->
             <div class="score-gauge">
                 <svg viewBox="0 0 120 120" class="gauge-svg">
+                    {% set circ = 314.0 %}
+                    {% set score = result.ats_score or 0 %}
+                    {% set offset = (circ - (score/100.0) * circ) | round(2) %}
                     <circle cx="60" cy="60" r="50" class="gauge-bg"></circle>
-                    <circle cx="60" cy="60" r="50" class="gauge-fill" id="opt-gauge-fill"></circle>
-                    <text x="60" y="55" class="gauge-number" id="opt-gauge-number">--</text>
+                    <circle cx="60" cy="60" r="50" class="gauge-fill" stroke="#27ae60" stroke-dasharray="{{ circ }}" stroke-dashoffset="{{ offset }}"></circle>
+                    <text x="60" y="55" class="gauge-number">{{ result.ats_score or '--' }}</text>
                     <text x="60" y="72" class="gauge-label">ATS Score</text>
                 </svg>
             </div>
-
-            <!-- Side by Side Changes with checkboxes -->
-            <h4 style="margin-bottom: 12px;">Review Changes <span style="font-weight:normal;color:#888;font-size:13px;">(check the ones you want to apply)</span></h4>
-            <div id="changes-list" class="changes-section"></div>
-
-            <div class="result-actions" style="margin-bottom: 20px;">
-                <button class="btn btn-primary" id="apply-changes-btn">Apply Selected Changes & Generate Final Resume</button>
-            </div>
-
-            <div id="apply-loading" class="loading hidden">
-                <div class="spinner"></div>
-                <p>Generating final resume...</p>
-            </div>
-
-            <div id="final-result" class="hidden" style="margin-top:15px; padding:15px; background:#e6ffed; border-radius:8px; border:1px solid #27ae60;">
-                <h4 style="color:#27ae60;">Final Resume Ready!</h4>
-                <div class="result-actions" style="margin-top:10px;">
-                    <a id="final-preview-link" href="#" target="_blank" class="btn btn-primary">Preview Final Resume</a>
-                    <a id="final-pdf-link" href="#" class="btn btn-secondary">Download PDF</a>
+            <h4>Review Changes</h4>
+            <div class="changes-section">
+                {% for c in result.changes %}
+                <div class="change-card">
+                    <div class="change-side change-before"><div class="change-label">Before</div><p>{{ c.original }}</p></div>
+                    <div class="change-side change-after"><div class="change-label">After</div><p>{{ c.improved }}</p></div>
+                    <div class="change-reason">{{ c.reason }}</div>
                 </div>
+                {% endfor %}
             </div>
-
-            <h4 style="margin: 20px 0 12px;">Suggestions</h4>
-            <div id="suggestions-list" class="suggestions-section"></div>
+            <h4>Suggestions</h4>
+            <div class="suggestions-section">
+                {% for s in result.suggestions %}<div class="suggestion-item">{{ s }}</div>{% endfor %}
+            </div>
+            <div class="result-actions">
+                <a class="btn btn-primary" href="/preview/{{ resume_id }}" target="_blank">Preview Final Resume</a>
+                <a class="btn btn-secondary" href="/export/{{ resume_id }}" target="_blank">Download PDF</a>
+            </div>
         </div>
+        {% endif %}
 
         <!-- ATS Check Results -->
-        <div id="ats-result" class="result-section hidden">
+        {% if ats %}
+        <div id="ats-result" class="result-section">
             <h3>ATS Analysis</h3>
-
-            <!-- Visual Score Gauge -->
             <div class="score-gauge">
+                {% set circ2 = 314.0 %}
+                {% set score2 = ats.score or 0 %}
+                {% set offset2 = (circ2 - (score2/100.0) * circ2) | round(2) %}
                 <svg viewBox="0 0 120 120" class="gauge-svg">
                     <circle cx="60" cy="60" r="50" class="gauge-bg"></circle>
-                    <circle cx="60" cy="60" r="50" class="gauge-fill" id="ats-gauge-fill"></circle>
-                    <text x="60" y="55" class="gauge-number" id="ats-gauge-number">--</text>
+                    <circle cx="60" cy="60" r="50" class="gauge-fill" stroke="#667eea" stroke-dasharray="{{ circ2 }}" stroke-dashoffset="{{ offset2 }}"></circle>
+                    <text x="60" y="55" class="gauge-number">{{ ats.score or '--' }}</text>
                     <text x="60" y="72" class="gauge-label">ATS Score</text>
                 </svg>
             </div>
-
             <div class="ats-details">
-                <div id="keywords-found" class="keyword-section"></div>
-                <div id="keywords-missing" class="keyword-section"></div>
-                <div id="format-issues" class="issues-section"></div>
-                <div id="content-feedback" class="feedback-section"></div>
+                <div class="keyword-section">
+                    <h4>Keywords Found</h4>
+                    <div class="keyword-tags">{% for k in ats.keyword_match.found %}<span class="keyword-tag keyword-found">{{ k }}</span>{% endfor %}</div>
+                </div>
+                <div class="keyword-section">
+                    <h4>Missing Keywords</h4>
+                    <div class="keyword-tags">{% for k in ats.keyword_match.missing %}<span class="keyword-tag keyword-missing">{{ k }}</span>{% endfor %}</div>
+                </div>
+                <div class="issues-section">
+                    <h4>Format Issues</h4>
+                    {% for issue in ats.format_issues %}<div class="suggestion-item">{{ issue }}</div>{% endfor %}
+                </div>
+                <div class="feedback-section">
+                    <h4>Content Feedback</h4>
+                    {% for f in ats.content_feedback %}<div class="suggestion-item">{{ f }}</div>{% endfor %}
+                </div>
             </div>
         </div>
+        {% endif %}
     </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
