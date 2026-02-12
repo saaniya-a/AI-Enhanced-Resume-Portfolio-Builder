@@ -98,9 +98,10 @@ Open in browser
       Share portfolio link
 
 ## Screenshots
-<img width="1440" height="932" alt="Screenshot 2026-02-12 at 9 10 07 AM" src="https://github.com/user-attachments/assets/8f6869fa-9010-4d74-933e-97b5263e18f6" />
 
-<img width="1440" height="932" alt="Screenshot 2026-02-12 at 9 10 31 AM" src="https://github.com/user-attachments/assets/66cdb854-6a9d-42d8-abe8-c0d2573f3cdb" />
+<img width="1770" height="2410" alt="image" src="https://github.com/user-attachments/assets/3010b7c4-75ed-4dfb-93e4-3e6fc0f52f0a" />
+
+<img width="1770" height="3382" alt="127 0 0 1_5001_builder" src="https://github.com/user-attachments/assets/6d7e3519-15fa-4abd-9794-46242674719e" />
 
 <img width="1440" height="932" alt="Screenshot 2026-02-12 at 9 13 05 AM" src="https://github.com/user-attachments/assets/f8a47d51-7564-41b5-aa72-54303a99efe2" />
 
